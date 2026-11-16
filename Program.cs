@@ -4,7 +4,7 @@ namespace DZ4_MultiThreadedProject
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
             Console.WriteLine($"Параметры системы, CPU: {Environment.ProcessorCount} ядер, OS: {Environment.OSVersion}");
             Console.WriteLine(new string('_', 45));
@@ -27,7 +27,7 @@ namespace DZ4_MultiThreadedProject
 
                 // 3.Параллельное
                 sw.Restart();
-                long s2 = SumParallel(arr);
+                long s2 = await SumParallel(arr);
                 sw.Stop();
                 Console.WriteLine($"Par n={n,10}: {s2,15}  {sw.Elapsed.TotalMilliseconds:F3} ms");
 
@@ -56,7 +56,7 @@ namespace DZ4_MultiThreadedProject
         /// </summary>
         /// <param name="a"></param>
         /// <returns></returns>
-        static long SumParallel(int[] a)
+        static async Task<long> SumParallelAsync(int[] a)
         {
             int parts = Environment.ProcessorCount;
             int chunk = a.Length / parts;
@@ -74,7 +74,9 @@ namespace DZ4_MultiThreadedProject
                     return local;
                 }));
             }
-            foreach (var t in tasks) total += t.Result;
+            long[] results = await Task.WhenAll(tasks);  // ← ждём все разом, без .Result
+
+            for (int i = 0; i < results.Length; i++) total += results[i];
             return total;
         }
 
